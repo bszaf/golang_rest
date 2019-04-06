@@ -1,29 +1,10 @@
 package db
 
-import (
-    "crypto/sha1"
-    "encoding/hex"
-)
+import "github.com/bszaf/golang_rest/model"
 
 type Db struct {
-    Questions map[int]Question
+    Questions map[int]model.Question
     QuestionsSeq int
-}
-
-type Question struct {
-    Text string
-    ValidAnswer Answer
-    WrongAnswers []Answer
-}
-
-type AnonQuestion struct {
-    Text string
-    Answers []Answer
-}
-
-type Answer struct {
-    Text string
-    Id string
 }
 
 type dbError struct {
@@ -35,11 +16,11 @@ func (d dbError) Error() string {
 }
 
 func NewDB() (Db) {
-    return Db{ Questions: make(map[int]Question), QuestionsSeq: 0}
+    return Db{ Questions: make(map[int]model.Question), QuestionsSeq: 0}
 }
 
 
-func (d *Db) GetQuestion(id int) (*Question, error) {
+func (d *Db) GetQuestion(id int) (*model.Question, error) {
     if id > d.QuestionsSeq - 1 {
         return nil, dbError{Msg: "not existing"}
     } else {
@@ -48,38 +29,18 @@ func (d *Db) GetQuestion(id int) (*Question, error) {
     }
 }
 
-func (d *Db) PutQuestion(q *Question) (int, error) {
+func (d *Db) ListQuestions() ([]*model.Question) {
+    all := make([]*model.Question, 0, len(d.Questions))
+    for _, v := range d.Questions {
+        all = append(all, &v)
+    }
+    return all
+}
+
+func (d *Db) PutQuestion(q *model.Question) (int, error) {
     newId := d.QuestionsSeq
+    q.Id = newId
     d.QuestionsSeq += 1
     d.Questions[newId] = *q
     return newId, nil
 }
-
-func NewQuestion(q_str string, v_str string, nv_str []string) (Question) {
-    q := Question{Text: q_str}
-    q.setValidAnswer(v_str)
-    for _, str := range nv_str {
-        q.addInvalidAnswer(str)
-    }
-    return q
-}
-
-func (q Question) HideValidAnswer() (AnonQuestion) {
-    return AnonQuestion{Text: q.Text, Answers: append(q.WrongAnswers, q.ValidAnswer)}
-}
-
-func (q *Question) setValidAnswer(text string) () {
-    q.ValidAnswer = newAnswer(text)
-}
-
-func (q *Question) addInvalidAnswer(text string) () {
-    q.WrongAnswers = append(q.WrongAnswers, newAnswer(text))
-}
-
-func newAnswer(text string) (Answer) {
-    idByte := sha1.Sum([]byte(text))
-    idString := hex.EncodeToString(idByte[:])
-    return Answer{Text: text, Id: idString}
-}
-
-
