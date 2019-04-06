@@ -6,11 +6,14 @@ import (
     "strings"
     "strconv"
     "github.com/bszaf/golang_rest/db"
+    "github.com/bszaf/golang_rest/model"
 )
 
 type Questions struct { Database *db.Db }
 type questionsPostReq struct { Text string; ValidAnswer string; Answers []string }
 type questionsPostRep struct { Id int }
+
+type questionsGetAllRep struct { Questions []model.AnonQuestion }
 
 func (q Questions) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     uriSegments := strings.Split(r.URL.Path, "/")
@@ -53,7 +56,12 @@ func (q Questions) handleGetSingle(idString string, w http.ResponseWriter, r *ht
 }
 
 func (q Questions) handleGetMany(w http.ResponseWriter, r *http.Request) {
-    return
+    resp := questionsGetAllRep{}
+    for _, question := range q.Database.ListQuestions() {
+        anonimized := question.HideValidAnswer()
+        resp.Questions = append(resp.Questions, anonimized)
+    }
+    json.NewEncoder(w).Encode(resp)
 }
 
 func (q Questions) handlePostNew(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +69,7 @@ func (q Questions) handlePostNew(w http.ResponseWriter, r *http.Request) {
     err := json.NewDecoder(r.Body).Decode(&req)
     if err == nil {
         fmt.Println(req)
-        question := db.NewQuestion(req.Text, req.ValidAnswer, req.Answers)
+        question := model.NewQuestion(req.Text, req.ValidAnswer, req.Answers)
         id, _ := q.Database.PutQuestion(&question)
         json.NewEncoder(w).Encode(questionsPostRep{Id: id})
     }

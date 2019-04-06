@@ -1,5 +1,6 @@
 package controllers
 import (
+    "fmt"
     "net/http"
     "encoding/json"
     "github.com/bszaf/golang_rest/db"
