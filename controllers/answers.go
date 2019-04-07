@@ -13,7 +13,7 @@ type questionAnswer struct {
     AnswerId string
 }
 type answerReq struct { Answers []questionAnswer }
-type answerRep struct { Score int }
+type answerRep struct { Score float32 }
 
 func (q Answers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     switch r.Method {
@@ -23,7 +23,9 @@ func (q Answers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         if err == nil {
             fmt.Println(req)
             score := calculateScore(q.Database, req)
-            json.NewEncoder(w).Encode(answerRep{Score: score})
+            ranking := compareToOthers(q.Database, score)
+            q.Database.AppendScore(score)
+            json.NewEncoder(w).Encode(answerRep{Score: ranking})
         } else {
             resp := make(map[string]error)
             resp["error"] = err
@@ -43,4 +45,16 @@ func calculateScore(d *db.Db, req answerReq) (int) {
         }
     }
     return goodAnswers
+}
+
+func compareToOthers(d *db.Db, score int) (float32) {
+    total := 0
+    worse := 0
+    for _, s := range d.GetScores() {
+        total++
+        if score > s {
+            worse++
+        }
+    }
+    return float32(worse)/float32(total)
 }
