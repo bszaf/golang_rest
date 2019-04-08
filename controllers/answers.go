@@ -4,28 +4,22 @@ import (
     "net/http"
     "encoding/json"
     "github.com/bszaf/golang_rest/db"
+    "github.com/bszaf/golang_rest/dto"
 )
 
 type Answers struct { Database *db.Db }
 
-type questionAnswer struct {
-    QuestionId int
-    AnswerId string
-}
-type answerReq struct { Answers []questionAnswer }
-type answerRep struct { Score float32 }
-
 func (q Answers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     switch r.Method {
     case "POST":
-        req := answerReq{}
+        req := dto.AnswerReq{}
         err := json.NewDecoder(r.Body).Decode(&req)
         if err == nil {
             fmt.Println(req)
             score := calculateScore(q.Database, req)
             ranking := compareToOthers(q.Database, score)
             q.Database.AppendScore(score)
-            json.NewEncoder(w).Encode(answerRep{Score: ranking})
+            json.NewEncoder(w).Encode(dto.AnswerRep{Score: score, Ranking: ranking})
         } else {
             resp := make(map[string]error)
             resp["error"] = err
@@ -35,7 +29,7 @@ func (q Answers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-func calculateScore(d *db.Db, req answerReq) (int) {
+func calculateScore(d *db.Db, req dto.AnswerReq) (int) {
     goodAnswers := 0
     for _, v := range req.Answers {
         if q, err := d.GetQuestion(v.QuestionId); err == nil {
