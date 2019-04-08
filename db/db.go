@@ -26,7 +26,7 @@ type listQuestionsReq struct {
     replyChannel chan listQuestionsRep
 }
 type listQuestionsRep struct {
-    val []*model.Question
+    val []model.Question
 }
 
 type putQuestionReq struct {
@@ -88,7 +88,7 @@ func (d Db) GetQuestion(id int) (*model.Question, error) {
     return rep.val, rep.err
 }
 
-func (d Db) ListQuestions() ([]*model.Question) {
+func (d Db) ListQuestions() ([]model.Question) {
     replyChannel := make(chan listQuestionsRep)
     req := listQuestionsReq{replyChannel: replyChannel}
     d.channel <- req
@@ -154,10 +154,10 @@ func (d *Db) getQuestion(id int) (*model.Question, error) {
     }
 }
 
-func (d *Db) listQuestions() ([]*model.Question) {
-    all := make([]*model.Question, 0, len(d.questions))
+func (d *Db) listQuestions() ([]model.Question) {
+    all := make([]model.Question, 0, len(d.questions))
     for _, v := range d.questions {
-        all = append(all, &v)
+        all = append(all, v)
     }
     return all
 }
