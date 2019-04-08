@@ -1,5 +1,8 @@
 package model
 
+import "math/rand"
+import "time"
+
 type Question struct {
     Id int
     Text string
@@ -23,7 +26,15 @@ func NewQuestion(q_str string, v_str string, nv_str []string) (Question) {
 }
 
 func (q Question) HideValidAnswer() (AnonQuestion) {
-    return AnonQuestion{Id: q.Id, Text: q.Text, Answers: append(q.WrongAnswers, q.ValidAnswer)}
+    a := make([]Answer, len(q.WrongAnswers) + 1)
+    copy(a, append(q.WrongAnswers, q.ValidAnswer))
+    rand.Seed(time.Now().UnixNano())
+    rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
+    return AnonQuestion{
+        Id: q.Id,
+        Text: q.Text,
+        Answers: a,
+    }
 }
 
 func (q *Question) setValidAnswer(text string) () {
