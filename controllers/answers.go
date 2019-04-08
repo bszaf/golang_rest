@@ -1,6 +1,5 @@
 package controllers
 import (
-    "fmt"
     "net/http"
     "encoding/json"
     "github.com/bszaf/golang_rest/db"
@@ -15,7 +14,6 @@ func (q Answers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         req := dto.AnswerReq{}
         err := json.NewDecoder(r.Body).Decode(&req)
         if err == nil {
-            fmt.Println(req)
             score := calculateScore(q.Database, req)
             ranking := compareToOthers(q.Database, score)
             q.Database.AppendScore(score)

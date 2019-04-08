@@ -64,7 +64,6 @@ func (q Questions) handlePostNew(w http.ResponseWriter, r *http.Request) {
     req := dto.QuestionsPostReq{}
     err := json.NewDecoder(r.Body).Decode(&req)
     if err == nil {
-        fmt.Println(req)
         question := model.NewQuestion(req.Text, req.ValidAnswer, req.Answers)
         id, _ := q.Database.PutQuestion(&question)
         json.NewEncoder(w).Encode(dto.QuestionsPostRep{Id: id})

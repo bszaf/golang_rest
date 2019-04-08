@@ -108,7 +108,6 @@ func quiz(*cobra.Command, []string) {
 
 func postAnswers(a dto.AnswerReq) *dto.AnswerRep {
     URL := fmt.Sprintf("%s/api/answer", serverAddr)
-    fmt.Println("Post answers to :", URL)
     buff := new(bytes.Buffer)
     json.NewEncoder(buff).Encode(a)
     resp, err := http.Post(URL, "application/json", buff)
@@ -127,7 +126,6 @@ func postAnswers(a dto.AnswerReq) *dto.AnswerRep {
 
 func postQuestion(q dto.QuestionsPostReq) *dto.QuestionsPostRep {
     URL := fmt.Sprintf("%s/api/questions", serverAddr)
-    fmt.Println("Push question to :", URL)
     buff := new(bytes.Buffer)
     json.NewEncoder(buff).Encode(q)
     resp, err := http.Post(URL, "application/json", buff)
@@ -146,7 +144,6 @@ func postQuestion(q dto.QuestionsPostReq) *dto.QuestionsPostRep {
 
 func getQuestions() *dto.QuestionsGetAllRep {
     URL := fmt.Sprintf("%s/api/questions", serverAddr)
-    fmt.Println("Connecting to server:", URL)
     resp, err := http.Get(URL)
     if err != nil {
         // handle error
